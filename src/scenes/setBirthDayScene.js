@@ -10,7 +10,7 @@ export const SetBirthDayScene = new Scenes.WizardScene('setBirthDayScene',
         return ctx.wizard.next();
     },
     (ctx) => {
-        const [name, date] = ctx.message?.text?.split(',');
+        const [name, date] = ctx.message?.text?.replace(' ', '').split(',');
 
         // validate before writing to state
 
@@ -39,18 +39,14 @@ export const SetBirthDayScene = new Scenes.WizardScene('setBirthDayScene',
         });
         return ctx.wizard.next();
     },
-    // append in google sheet
-    async (ctx) => {
+    // all good ask for comment
+    (ctx) => {
         const data = ctx?.callbackQuery?.data;
 
         if (data === CONFIRM) {
-            const { name, date } = ctx.wizard.state.newUser;
-            const apiClient = await getApiClient();
+            ctx.reply('Возможно человек хочет какой-то особый подарок или наоборот не хочет. Добавь заметку, чтобы не забыть. Поставь прочерк, если нечего написать.')
 
-            await appendSheetsData(apiClient, { values: [[name, date]] });
-            ctx.reply('Ура! Новый сотрудник добавлен!');
-
-            return ctx.scene.leave();
+            return ctx.wizard.next();
         }
 
         if (data === DECLINE) {
@@ -58,5 +54,16 @@ export const SetBirthDayScene = new Scenes.WizardScene('setBirthDayScene',
             ctx.wizard.selectStep(0);
             return ctx.wizard.steps[0](ctx);
         }
+    },
+    // append in google sheet
+    async (ctx) => {
+        const comment = ctx.message?.text || '';
+        const { name, date } = ctx.wizard.state.newUser;
+        const apiClient = await getApiClient();
+
+        await appendSheetsData(apiClient, { values: [[name, date, comment]] });
+        ctx.reply('Ура! Новый сотрудник добавлен!');
+
+        return ctx.scene.leave();
     },
 );
