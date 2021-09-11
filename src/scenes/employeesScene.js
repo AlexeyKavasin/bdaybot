@@ -84,13 +84,12 @@ export const EmployeesScene = new Scenes.WizardScene('employeesScene',
         if (ctx.callbackQuery && ctx.callbackQuery.data.includes('edit')) {
             const feature = ctx.callbackQuery.data.split('-')[1];
             const employeeIndex = ctx.callbackQuery.data.split('-')[2];
-
             ctx.wizard.state.employeesList.editingFeature = feature;
             ctx.wizard.state.employeesList.editingIndex = employeeIndex;
 
             ctx.reply(`Редактируем ${colNames[feature]} ${ctx.wizard.state.employeesList.employees[employeeIndex].name}. Введите новое значение`);
 
-            return ctx.wizard.next(employeeIndex);
+            return ctx.wizard.next();
         }
     },
     async (ctx) => {
@@ -110,7 +109,7 @@ export const EmployeesScene = new Scenes.WizardScene('employeesScene',
             { values: [[text]] }
         );
 
-        ctx.reply(`Ура! Отредактировали ${colNames[feature]}!`);
+        await ctx.reply(`Ура! Отредактировали ${colNames[feature]}!`);
 
         return ctx.scene.leave();
     },
@@ -131,5 +130,5 @@ export function getRange(feature, employeeIndex) {
         col = 'C';
     }
 
-    return `${col}${employeeIndex + 2}`;
+    return `${col}${Number(employeeIndex) + 2}`;
 }

@@ -1,68 +1,135 @@
 import { Scenes } from 'telegraf';
 import { appendSheetsData, getApiClient } from '../utils/googlesheetutils.js';
+import { composeEmployeesText, prepareEmployeesInfo } from '../utils/utils.js';
 
 const CONFIRM = 'CONFIRM';
+const CONFIRM_MULTI = 'CONFIRM_MULTI';
 const DECLINE = 'DECLINE';
+const DECLINE_MULTI = 'DECLINE_MULTI';
 
 export const SetBirthDayScene = new Scenes.WizardScene('setBirthDayScene',
     (ctx) => {
-        ctx.reply('Хочешь добавить нового сотрудника в список?\nПросто напиши его имя и день рожения в числовом формате через запятую. Год указывать не надо.\nПример: "Иван, 01.01."');
+        ctx.reply(`
+Хочешь добавить сотрудников?\n
+Просто напиши имя и день рожения в числовом формате через запятую. Год указывать не надо. И да, это можно сделать списком.\n
+Пример: "Иван, 01.01, Петр, 02.02, Мария, 03.03"
+`);
         return ctx.wizard.next();
     },
-    (ctx) => {
-        const [name, date] = ctx.message?.text?.replace(' ', '').split(',');
+    async (ctx) => {
+        const text = ctx.message && ctx.message.text;
 
-        // validate before writing to state
+        if (text === '/exit' || text === '/help') {
+            return ctx.scene.leave();
+        }
 
-        ctx.wizard.state.newUser = {
-            name,
-            date,
-        };
+        const employeesInfo = await prepareEmployeesInfo(text);
 
-        ctx.reply(`Давай проверим что все правильно.\n\nИмя: ${name}\nДень рождения: ${date}\n\nВсе так?`, {
-            reply_markup: {
-                inline_keyboard: [
-                    [
-                        {
-                            text: 'Да',
-                            callback_data: CONFIRM,
-                        }
-                    ],
-                    [
-                        {
-                            text: 'Нет',
-                            callback_data: DECLINE,
-                        }
-                    ],
-                ] 
-            }
-        });
-        return ctx.wizard.next();
-    },
-    // all good ask for comment
-    (ctx) => {
-        const data = ctx?.callbackQuery?.data;
+        if (!employeesInfo.length) {
+            // validate input
+            return;
+        }
 
-        if (data === CONFIRM) {
-            ctx.reply('Возможно человек хочет какой-то особый подарок или наоборот не хочет. Добавь заметку, чтобы не забыть. Поставь прочерк, если нечего написать.')
+        if (employeesInfo.length === 1) {
+            // single employee adding
+            const { name, date } = employeesInfo[0];
+
+            // validate before writing to state
+
+            ctx.wizard.state.newEmployee = {
+                name,
+                date,
+            };
+
+            ctx.reply(`Давай проверим что все правильно.\n\nИмя: ${name}\nДень рождения: ${date}\n\nВсе так?`, {
+                reply_markup: {
+                    inline_keyboard: [
+                        [
+                            {
+                                text: 'Да',
+                                callback_data: CONFIRM,
+                            }
+                        ],
+                        [
+                            {
+                                text: 'Нет',
+                                callback_data: DECLINE,
+                            }
+                        ],
+                    ] 
+                }
+            });
 
             return ctx.wizard.next();
         }
 
-        if (data === DECLINE) {
+        if (employeesInfo.length > 1) {
+            // list adding
+            // compose text
+            const employeesText = composeEmployeesText(employeesInfo);
+            ctx.wizard.state.newEmployees = {
+                data: employeesInfo.map((e) => [e.name, e.date]),
+            };
+            ctx.reply(employeesText, {
+                reply_markup: {
+                    inline_keyboard: [
+                        [
+                            {
+                                text: 'Да',
+                                callback_data: CONFIRM_MULTI,
+                            }
+                        ],
+                        [
+                            {
+                                text: 'Нет',
+                                callback_data: DECLINE_MULTI,
+                            }
+                        ],
+                    ] 
+                }
+            });
+            return ctx.wizard.next();
+        }
+    },
+    // all good ask for comment only on single employee
+    async (ctx) => {
+        const data = ctx?.callbackQuery?.data;
+
+        if (data === DECLINE || data === DECLINE_MULTI) {
             ctx.deleteMessage();
             ctx.wizard.selectStep(0);
             return ctx.wizard.steps[0](ctx);
         }
+
+        if (data === CONFIRM_MULTI) {
+            const apiClient = await getApiClient();
+            await appendSheetsData(apiClient, {
+                values: ctx.wizard.state.newEmployees.data,
+            })
+            await ctx.reply('Ура! Новые сотрудники добавлены!');
+
+            return ctx.scene.leave();
+        }
+
+        if (data === CONFIRM) {
+            ctx.reply('К каждому человеку можно оставить комментарий для себя. Поставь прочерк, если нечего написать.')
+
+            return ctx.wizard.next();
+        }
     },
-    // append in google sheet
+    // append in google sheet when single
     async (ctx) => {
-        const comment = ctx.message?.text || '';
-        const { name, date } = ctx.wizard.state.newUser;
+        const comment = (ctx.message && ctx.message.text) || '';
+
+        if (comment === '/exit' || comment === '/help') {
+            return ctx.scene.leave();
+        }
+
+        const { name, date } = ctx.wizard.state.newEmployee;
         const apiClient = await getApiClient();
 
         await appendSheetsData(apiClient, { values: [[name, date, comment]] });
-        ctx.reply('Ура! Новый сотрудник добавлен!');
+        await ctx.reply('Ура! Новый сотрудник добавлен!');
 
         return ctx.scene.leave();
     },
