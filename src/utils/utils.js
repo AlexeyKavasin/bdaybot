@@ -21,3 +21,21 @@ export function composeEmployeesText(data) {
 
     return `Давай проверим что все правильно.\n\n${namesAndDates}\n\nВсе так?`;
 }
+
+export function getRange(feature, employeeIndex) {
+    let col;
+
+    if (feature === 'name') {
+        col = 'A';
+    }
+
+    if (feature === 'bday') {
+        col = 'B';
+    }
+
+    if (feature === 'comment') {
+        col = 'C';
+    }
+
+    return `${col}${Number(employeeIndex) + 2}`;
+}

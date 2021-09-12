@@ -45,7 +45,7 @@ export const getSheetsData = async (apiClient) => {
    return data.sheets;
 };
 
-export const appendSheetsData = async (apiClient, resource) => {
+export const appendSheetsData = (apiClient, resource) => {
    apiClient.values.append({
         spreadsheetId: SHEET_ID,
         range: 'School_Birthdays',
@@ -54,11 +54,18 @@ export const appendSheetsData = async (apiClient, resource) => {
    });
 };
 
-export const updateSheetsData = async (apiClient, range, resource) => {
+export const updateSheetsData = (apiClient, range, resource) => {
     apiClient.values.update({
          spreadsheetId: SHEET_ID,
          range: `School_Birthdays!${range}`,
          valueInputOption: 'USER_ENTERED',
          resource,
     });
- };
+};
+
+export const deleteRow = (apiClient, resource) => {
+    apiClient.batchUpdate({
+        spreadsheetId: SHEET_ID,
+        resource,
+    });
+};

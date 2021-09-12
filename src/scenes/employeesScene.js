@@ -1,6 +1,7 @@
 import { Scenes } from 'telegraf';
 import { GETLIST_REPLIES } from '../constants.js';
-import { getApiClient, getSheetsData, updateSheetsData } from '../utils/googlesheetutils.js';
+import { deleteRow, getApiClient, getSheetsData, updateSheetsData } from '../utils/googlesheetutils.js';
+import { getRange } from '../utils/utils.js';
 
 const colNames = {
     name: 'имя',
@@ -46,7 +47,7 @@ export const EmployeesScene = new Scenes.WizardScene('employeesScene',
 
         return ctx.wizard.next();
     },
-    (ctx) => {
+    async (ctx) => {
         const text = ctx.message && ctx.message.text;
 
         if (text === '/exit' || text === '/help') {
@@ -74,6 +75,12 @@ export const EmployeesScene = new Scenes.WizardScene('employeesScene',
                         callback_data: `edit-comment-${employeeIndex}`
                     }
                 ],
+                [
+                    {
+                        text: 'Удалить сотрудника',
+                        callback_data: `delete-${employeeIndex}`
+                    }
+                ],
             ]
 
             const { name, bDay, comment } = ctx.wizard.state.employeesList.employees[employeeIndex];
@@ -90,6 +97,32 @@ export const EmployeesScene = new Scenes.WizardScene('employeesScene',
             ctx.reply(`Редактируем ${colNames[feature]} ${ctx.wizard.state.employeesList.employees[employeeIndex].name}. Введите новое значение`);
 
             return ctx.wizard.next();
+        }
+
+        if (ctx.callbackQuery && ctx.callbackQuery.data.includes('delete')) {
+            // удаление сотрудника
+            const employeeIndex = ctx.callbackQuery.data.split('-')[1];
+
+            await ctx.reply('Секундочку. Удаляем сотрудника...');
+
+            const apiClient = await getApiClient();
+            await deleteRow(apiClient, {
+                requests: [
+                    {
+                        deleteDimension: {
+                            range: {
+                                dimension: 'ROWS',
+                                startIndex: +employeeIndex + 1,
+                                endIndex: +employeeIndex + 2,
+                            }
+                        }
+                    }
+                ],
+            });
+
+            await ctx.reply('Сотрудник удален :(');
+
+            return ctx.scene.leave();
         }
     },
     async (ctx) => {
@@ -114,21 +147,3 @@ export const EmployeesScene = new Scenes.WizardScene('employeesScene',
         return ctx.scene.leave();
     },
 );
-
-export function getRange(feature, employeeIndex) {
-    let col;
-
-    if (feature === 'name') {
-        col = 'A';
-    }
-
-    if (feature === 'bday') {
-        col = 'B';
-    }
-
-    if (feature === 'comment') {
-        col = 'C';
-    }
-
-    return `${col}${Number(employeeIndex) + 2}`;
-}
