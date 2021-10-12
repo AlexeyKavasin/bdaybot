@@ -39,3 +39,50 @@ export function getRange(feature, employeeIndex) {
 
     return `${col}${Number(employeeIndex) + 2}`;
 }
+
+export function getEmployeesData(data) {
+    return data.reduce((acc, item, index) => {
+        const name = item.values[0].formattedValue;
+        const bDay = item.values[1].formattedValue;
+        const comment = item.values[2].formattedValue;
+    
+        if (index > 0 && name && bDay) {
+            return [...acc, {name, bDay, comment}];
+        }
+    
+        return acc;
+    }, []);
+}
+
+const DAYS_IN_MONTHS = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+export function getDayRange(currentDay, currentMonth) {
+    const range = [];
+    let firstDayOfNewMonth = 1;
+    let firstMonth = 1;
+
+    for (let i = 0, j = 0; i <= 7; i++) {
+        let day;
+        let month;
+
+        if (currentDay + i > DAYS_IN_MONTHS[currentMonth]) {
+          day = firstDayOfNewMonth + j;
+          month = currentMonth + 2 > 12 ? firstMonth : currentMonth + 2;
+          j++;
+        } else {
+          day = currentDay + i;
+          month = currentMonth + 1;
+        }
+
+
+        range.push(`${day < 10 ? `0${day}` : day}.${month < 10 ? `0${month}` : month}`);
+    }
+
+    return range;
+}
+
+export function getEmployeesWithBirthdaysThisWeek(data) {
+    const dayRange = getDayRange(new Date().getDate(), new Date().getMonth());
+
+    return data.filter((e) => dayRange.includes(e.bDay));
+}

@@ -1,7 +1,7 @@
 import { Scenes } from 'telegraf';
 import { GETLIST_REPLIES } from '../constants.js';
 import { deleteRow, getApiClient, getSheetsData, updateSheetsData } from '../utils/googlesheetutils.js';
-import { getRange } from '../utils/utils.js';
+import { getEmployeesData, getRange } from '../utils/utils.js';
 
 const colNames = {
     name: 'имя',
@@ -15,17 +15,7 @@ export const EmployeesScene = new Scenes.WizardScene('employeesScene',
 
         const apiClient = await getApiClient();
         const [sheet] = await getSheetsData(apiClient);
-        const employees = await sheet.data[0].rowData.reduce((acc, item, index) => {
-            const name = item.values[0].formattedValue;
-            const bDay = item.values[1].formattedValue;
-            const comment = item.values[2].formattedValue;
-
-            if (index > 0 && name && bDay) {
-                return [...acc, {name, bDay, comment}];
-            }
-
-            return acc;
-        }, []);
+        const employeesData = await getEmployeesData(sheet.data[0].rowData);
         const employeesKeyboard = await sheet.data[0].rowData.reduce((acc, item, index) => {
             const name = item.values[0].formattedValue;
 
@@ -42,7 +32,7 @@ export const EmployeesScene = new Scenes.WizardScene('employeesScene',
             }
         });
         ctx.wizard.state.employeesList = {
-            employees,
+            employees: employeesData,
         }
 
         return ctx.wizard.next();

@@ -1,12 +1,13 @@
 import { Telegraf, Scenes, session } from 'telegraf';
 import { SetBirthDayScene } from './scenes/setBirthDayScene.js';
 import { EmployeesScene } from './scenes/employeesScene.js';
+import { SetCronScene } from './scenes/cronScene.js';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
-const stage = new Scenes.Stage([ EmployeesScene, SetBirthDayScene ]);
+const stage = new Scenes.Stage([ EmployeesScene, SetBirthDayScene, SetCronScene ]);
 
 bot.use(session());
 bot.use(stage.middleware())
@@ -25,12 +26,16 @@ bot.command('set', async (ctx) => {
     await ctx.scene.enter('setBirthDayScene');
 });
 
+bot.command('remind', async (ctx) => {
+    await ctx.scene.enter('setCronScene');
+});
+
 bot.command('exit', async (ctx) => {
     await ctx.scene.leave();
 });
 
 bot.command('help', async (ctx) => {
-    ctx.reply('/getlist - список сотрудников с возможностью правки данных\n/set - добавить нового сотрудника\n/exit - выход к начальному состоянию')
+    ctx.reply('/getlist - список сотрудников с возможностью правки данных\n/set - добавить нового сотрудника\n/remind - установить напоминалку\n/exit - выход к начальному состоянию');
 })
 
 EmployeesScene.leave((ctx) => {
@@ -38,6 +43,10 @@ EmployeesScene.leave((ctx) => {
 })
 
 SetBirthDayScene.leave((ctx) => {
+    ctx.reply(GREETING_TEXT);
+})
+
+SetCronScene.leave((ctx) => {
     ctx.reply(GREETING_TEXT);
 })
 
