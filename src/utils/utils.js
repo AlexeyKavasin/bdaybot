@@ -86,3 +86,25 @@ export function getEmployeesWithBirthdaysThisWeek(data) {
 
     return data.filter((e) => dayRange.includes(e.bDay));
 }
+
+export function isDayAndMonthValid(day, month) {
+    if (!day || !month) {
+        return false;
+    }
+
+    return day <= DAYS_IN_MONTHS[month - 1];
+}
+
+export function dateIsValid(date) {
+    if (!date || typeof date !== 'string' || date.split('.').length !== 2) {
+        return false;
+    }
+
+    const [day, month] = date.split('.');
+
+    if (!day || !month || day < 0 || day > 31 || month > 12 || month < 0) {
+        return false;
+    }
+
+    return isDayAndMonthValid(day, month);
+}

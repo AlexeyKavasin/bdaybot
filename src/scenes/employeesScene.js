@@ -18,9 +18,10 @@ export const EmployeesScene = new Scenes.WizardScene('employeesScene',
         const employeesData = await getEmployeesData(sheet.data[0].rowData);
         const employeesKeyboard = await sheet.data[0].rowData.reduce((acc, item, index) => {
             const name = item.values[0].formattedValue;
+            const bDay = item.values[1].formattedValue;
 
             if (index > 0 && name) {
-                return [...acc, [{text: name, callback_data: `employee-${index - 1}`}]];
+                return [...acc, [{text: `${name} ${bDay}`, callback_data: `employee-${index - 1}`}]];
             }
 
             return acc;

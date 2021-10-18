@@ -1,6 +1,6 @@
 import { Scenes } from 'telegraf';
 import { appendSheetsData, getApiClient } from '../utils/googlesheetutils.js';
-import { composeEmployeesText, prepareEmployeesInfo } from '../utils/utils.js';
+import { composeEmployeesText, prepareEmployeesInfo, dateIsValid } from '../utils/utils.js';
 
 const CONFIRM = 'CONFIRM';
 const CONFIRM_MULTI = 'CONFIRM_MULTI';
@@ -33,8 +33,13 @@ export const SetBirthDayScene = new Scenes.WizardScene('setBirthDayScene',
         if (employeesInfo.length === 1) {
             // single employee adding
             const { name, date } = employeesInfo[0];
+            const isValid = await dateIsValid(date);
 
             // validate before writing to state
+            if (!isValid) {
+                ctx.reply('Что-то не так с датой. Корректный формат выглядит так: "01.01", "02.02" итд. Попробуйте еще раз.');
+                return;
+            }
 
             ctx.wizard.state.newEmployee = {
                 name,
@@ -66,10 +71,19 @@ export const SetBirthDayScene = new Scenes.WizardScene('setBirthDayScene',
         if (employeesInfo.length > 1) {
             // list adding
             // compose text
+            const allDatesValid = await employeesInfo.filter((emp) => dateIsValid(emp.date)).length === employeesInfo.length;
+
+            if (!allDatesValid) {
+                ctx.reply('Что-то не так с датой. Корректный формат выглядит так: "01.01", "02.02" итд. Попробуйте еще раз.');
+                return;
+            }
+
             const employeesText = composeEmployeesText(employeesInfo);
+
             ctx.wizard.state.newEmployees = {
                 data: employeesInfo.map((e) => [e.name, e.date]),
             };
+
             ctx.reply(employeesText, {
                 reply_markup: {
                     inline_keyboard: [
@@ -88,6 +102,7 @@ export const SetBirthDayScene = new Scenes.WizardScene('setBirthDayScene',
                     ] 
                 }
             });
+
             return ctx.wizard.next();
         }
     },
