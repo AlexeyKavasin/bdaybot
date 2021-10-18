@@ -2,6 +2,7 @@ import { Telegraf, Scenes, session } from 'telegraf';
 import { SetBirthDayScene } from './scenes/setBirthDayScene.js';
 import { EmployeesScene } from './scenes/employeesScene.js';
 import { SetCronScene } from './scenes/cronScene.js';
+import { CREDS, GREETING_TEXT, STRANGER_GREETING_TEXT } from './constants.js';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
@@ -12,22 +13,35 @@ const stage = new Scenes.Stage([ EmployeesScene, SetBirthDayScene, SetCronScene 
 bot.use(session());
 bot.use(stage.middleware())
 
-const GREETING_TEXT = 'Привет. Я бот, знающий дни рождения всех сотрудников команды школ.';
+let permitted = false;
 
-bot.start((ctx) => {
-    ctx.reply(GREETING_TEXT);
+bot.start(async (ctx) => {
+    const { permissions } = JSON.parse(CREDS);
+    permitted = Boolean(permissions && ctx.chat.username && permissions.includes(ctx.chat.username));
+
+    if (permitted) {
+        ctx.reply(GREETING_TEXT);
+    } else {
+        ctx.reply(STRANGER_GREETING_TEXT);
+    }
 });
 
 bot.command('getlist', async (ctx) => {
-    await ctx.scene.enter('employeesScene');
+    if (permitted) {
+        await ctx.scene.enter('employeesScene');
+    }
 });
 
 bot.command('set', async (ctx) => {
-    await ctx.scene.enter('setBirthDayScene');
+    if (permitted) {
+        await ctx.scene.enter('setBirthDayScene');
+    }
 });
 
 bot.command('remind', async (ctx) => {
-    await ctx.scene.enter('setCronScene');
+    if (permitted) {
+        await ctx.scene.enter('setCronScene');
+    }
 });
 
 bot.command('exit', async (ctx) => {

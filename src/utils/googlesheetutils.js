@@ -1,27 +1,21 @@
-import * as fs from 'fs';
-import { promisify } from 'util';
 import { google } from 'googleapis';
+import { CREDS } from '../constants.js';
 
-const readFile = promisify(fs.readFile);
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
-const CREDENTIALS_PATH = './credentials.json';
 const SHEET_ID = '1x_14MAashhudRP5c7iX1cuk_YhpQOYvzyzNexvxiqUk';
 
 export const getAuthClient = async () => {
-   const content = await readFile(CREDENTIALS_PATH)
-       .catch( error => console.log('Error loading client secret file:', error));
+    const { client_email, private_key } = JSON.parse(CREDS);
 
-   const { client_email, private_key } = JSON.parse(content);
+    const client = new google.auth.JWT(
+        client_email,
+        null,
+        private_key,
+        SCOPES,
+        null,
+    );
 
-   const client = new google.auth.JWT(
-       client_email,
-       null,
-       private_key,
-       SCOPES,
-       null,
-   );
-
-   return client;
+    return client;
 };
 
 export const getApiClient = async () => {
