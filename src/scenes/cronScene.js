@@ -55,7 +55,8 @@ export const SetCronScene = new Scenes.WizardScene(
 
       // 0 * * * * - every hour
       // * * * * * - every minute
-      const task = cron.schedule('0 * * * *', async () => {
+      // 0 13 * * FRI - every friday 13:00
+      const task = cron.schedule('* * * * *', async () => {
         const apiClient = await getApiClient();
         const [sheet] = await getSheetsData(apiClient);
         const employeesData = await getEmployeesData(sheet.data[0].rowData);
