@@ -4,7 +4,8 @@ const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
 
 export const getAuthClient = async () => {
     const client_email = process.env.CLIENT_EMAIL;
-    const private_key = process.env.PRIVATE_KEY;
+    // PRIVATE_KEY formatting issue hack
+    const private_key = process.env.PRIVATE_KEY.replace(/\\n/gm, '\n');
 
     const client = new google.auth.JWT(
         client_email,
