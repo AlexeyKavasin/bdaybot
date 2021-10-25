@@ -1,11 +1,10 @@
 import { google } from 'googleapis';
-import { CREDS } from '../constants.js';
 
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
-const SHEET_ID = '1x_14MAashhudRP5c7iX1cuk_YhpQOYvzyzNexvxiqUk';
 
 export const getAuthClient = async () => {
-    const { client_email, private_key } = JSON.parse(CREDS);
+    const client_email = process.env.CLIENT_EMAIL;
+    const private_key = process.env.PRIVATE_KEY;
 
     const client = new google.auth.JWT(
         client_email,
@@ -30,7 +29,7 @@ export const getApiClient = async () => {
 
 export const getSheetsData = async (apiClient) => {
    const { data } = await apiClient.get({
-       spreadsheetId: SHEET_ID,
+       spreadsheetId: process.env.SHEET_ID,
        fields: 'sheets',
        ranges: 'School_Birthdays',
        includeGridData: true,
@@ -41,7 +40,7 @@ export const getSheetsData = async (apiClient) => {
 
 export const appendSheetsData = (apiClient, resource) => {
    apiClient.values.append({
-        spreadsheetId: SHEET_ID,
+        spreadsheetId: process.env.SHEET_ID,
         range: 'School_Birthdays',
         valueInputOption: 'USER_ENTERED',
         resource,
@@ -50,7 +49,7 @@ export const appendSheetsData = (apiClient, resource) => {
 
 export const updateSheetsData = (apiClient, range, resource) => {
     apiClient.values.update({
-         spreadsheetId: SHEET_ID,
+         spreadsheetId: process.env.SHEET_ID,
          range: `School_Birthdays!${range}`,
          valueInputOption: 'USER_ENTERED',
          resource,
@@ -59,7 +58,7 @@ export const updateSheetsData = (apiClient, range, resource) => {
 
 export const deleteRow = (apiClient, resource) => {
     apiClient.batchUpdate({
-        spreadsheetId: SHEET_ID,
+        spreadsheetId: process.env.SHEET_ID,
         resource,
     });
 };

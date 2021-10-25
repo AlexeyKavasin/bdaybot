@@ -2,7 +2,7 @@ import { Telegraf, Scenes, session } from 'telegraf';
 import { SetBirthDayScene } from './scenes/setBirthDayScene.js';
 import { EmployeesScene } from './scenes/employeesScene.js';
 import { SetCronScene } from './scenes/cronScene.js';
-import { CREDS, GREETING_TEXT, STRANGER_GREETING_TEXT } from './constants.js';
+import { GREETING_TEXT, STRANGER_GREETING_TEXT } from './constants.js';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
@@ -16,7 +16,8 @@ bot.use(stage.middleware())
 let permitted = false;
 
 bot.start(async (ctx) => {
-    const { permissions } = JSON.parse(CREDS);
+    const permissions = process.env.PERMISSIONS;
+
     permitted = Boolean(permissions && ctx.chat.username && permissions.includes(ctx.chat.username));
 
     if (permitted) {
