@@ -47,7 +47,7 @@ export const SetCronScene = new Scenes.WizardScene(
 
     if (data === SUBSCRIBE) {
       // every hour
-      if (cronTaskMap.week) {
+      if (cronTaskMap[`week_${ctx.chat.username}`]) {
         await ctx.reply('Напоминалка уже была установлена!');
 
         return ctx.scene.leave();
@@ -57,7 +57,7 @@ export const SetCronScene = new Scenes.WizardScene(
       // * * * * * - every minute
       // 0 10 * * * - every day 10:00
       // 0 13 * * FRI - every friday 13:00
-      const task = cron.schedule('0 10 * * *', async () => {
+      const task = cron.schedule('0 13 * * FRI', async () => {
         const apiClient = await getApiClient();
         const [sheet] = await getSheetsData(apiClient);
         const employeesData = await getEmployeesData(sheet.data[0].rowData);
@@ -75,16 +75,16 @@ export const SetCronScene = new Scenes.WizardScene(
           ctx.reply(`🥳 🎉 🥳 🎉 🥳\n\nУра! Похоже что кое у кого скоро день рождения:\n ${employeesStr}`);
         }
       }, { scheduled: false, timezone: 'Europe/Moscow' });
-      cronTaskMap.week = task;
-      cronTaskMap.week.start();
+      cronTaskMap[`week_${ctx.chat.username}`] = task;
+      cronTaskMap[`week_${ctx.chat.username}`].start();
       await ctx.reply('Ура! Напоминалка установлена!');
 
       return ctx.scene.leave();
     }
 
     if (data === UNSUBSCRIBE) {
-      if (cronTaskMap.week) {
-        cronTaskMap.week.stop();
+      if (cronTaskMap[`week_${ctx.chat.username}`]) {
+        cronTaskMap[`week_${ctx.chat.username}`].stop();
         await ctx.reply('Ура! Напоминалка отменена!');
       }
 
