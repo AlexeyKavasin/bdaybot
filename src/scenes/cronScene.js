@@ -57,7 +57,7 @@ export const SetCronScene = new Scenes.WizardScene(
       // * * * * * - every minute
       // 0 10 * * * - every day 10:00
       // 0 13 * * FRI - every friday 13:00
-      const task = cron.schedule('0 13 * * FRI', async () => {
+      const task = cron.schedule('0 14 * * FRI', async () => {
         const apiClient = await getApiClient();
         const [sheet] = await getSheetsData(apiClient);
         const employeesData = await getEmployeesData(sheet.data[0].rowData);
@@ -66,7 +66,7 @@ export const SetCronScene = new Scenes.WizardScene(
         if (hasBirthdays.length) {
           const employeesStr = hasBirthdays.reduce((acc, employee) => {
             if (employee) {
-              return `${acc}\nИмя: ${employee.name}\nДень рождения: ${employee.bDay}\nКомментарий: ${employee.comment}\n`
+              return `${acc}\nИмя: ${employee.name}\nДень рождения: ${employee.bDay}\nКомментарий: ${employee.comment || ''}\n`
             }
 
             return acc;
