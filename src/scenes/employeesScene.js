@@ -1,7 +1,8 @@
 import { Scenes } from 'telegraf';
-import { GETLIST_REPLIES } from '../constants.js';
 import { deleteRow, getApiClient, getSheetsData, updateSheetsData } from '../utils/googlesheetutils.js';
-import { getEmployeesData, getRange } from '../utils/utils.js';
+import {
+    getEmployeesData, getEmployeesKeyBoard, getEmployeesReplyText, getRange, sortDatesAscending,
+} from '../utils/utils.js';
 
 const colNames = {
     name: 'имя',
@@ -11,32 +12,31 @@ const colNames = {
 
 export const EmployeesScene = new Scenes.WizardScene('employeesScene',
     async (ctx) => {
-        ctx.reply(GETLIST_REPLIES[Math.abs(Math.round(Math.random() * GETLIST_REPLIES.length - 1))]);
+        const fullList = Boolean(ctx.message.text.includes('getlist'));
+        ctx.reply(getEmployeesReplyText(fullList));
 
-        const apiClient = await getApiClient();
-        const [sheet] = await getSheetsData(apiClient);
-        const employeesData = await getEmployeesData(sheet.data[0].rowData);
-        const employeesKeyboard = await sheet.data[0].rowData.reduce((acc, item, index) => {
-            const name = item.values[0].formattedValue;
-            const bDay = item.values[1].formattedValue;
+        const apiClient = await getApiClient().catch((err) => console.log(`GetApiClient Error: ${err}`));
+        const [sheet] = await getSheetsData(apiClient).catch((err) => console.log(`GetSheetsData Error: ${err}`));
+        const employeesData = await getEmployeesData(sheet.data[0].rowData, fullList).sort(sortDatesAscending);
+        const employeesKeyboard = await getEmployeesKeyBoard(employeesData);
 
-            if (index > 0 && name) {
-                return [...acc, [{text: `${name} ${bDay}`, callback_data: `employee-${index - 1}`}]];
+        if (employeesData && employeesData.length) {
+            ctx.reply("Вот список:", {
+                reply_markup: {
+                    inline_keyboard: employeesKeyboard,
+                }
+            });
+    
+            ctx.wizard.state.employeesList = {
+                employees: employeesData,
             }
 
-            return acc;
-        }, []);
+            return ctx.wizard.next();
+        } else {
+            await ctx.reply('В ближайшую неделю никто не празднует день рождения :(');
 
-        ctx.reply("Вот весь список:", {
-            reply_markup: {
-                inline_keyboard: employeesKeyboard,
-            }
-        });
-        ctx.wizard.state.employeesList = {
-            employees: employeesData,
+            return ctx.scene.leave();
         }
-
-        return ctx.wizard.next();
     },
     async (ctx) => {
         const text = ctx.message && ctx.message.text;
@@ -96,7 +96,7 @@ export const EmployeesScene = new Scenes.WizardScene('employeesScene',
 
             await ctx.reply('Секундочку. Удаляем сотрудника...');
 
-            const apiClient = await getApiClient();
+            const apiClient = await getApiClient().catch((err) => console.log(`GetApiClient Error: ${err}`));
             await deleteRow(apiClient, {
                 requests: [
                     {
@@ -109,7 +109,7 @@ export const EmployeesScene = new Scenes.WizardScene('employeesScene',
                         }
                     }
                 ],
-            });
+            }).catch((err) => console.log(`DeleteRow Error: ${err}`));
 
             await ctx.reply('Сотрудник удален :(');
 
@@ -125,13 +125,13 @@ export const EmployeesScene = new Scenes.WizardScene('employeesScene',
 
         const feature = ctx.wizard.state.employeesList.editingFeature;
         const employeeIndex = ctx.wizard.state.employeesList.editingIndex;
-        const apiClient = await getApiClient();
+        const apiClient = await getApiClient().catch((err) => console.log(`GetApiClient Error: ${err}`));
 
         await updateSheetsData(
             apiClient,
             getRange(feature, employeeIndex),
             { values: [[text]] }
-        );
+        ).catch((err) => console.log(`UpdateSheetsData Error: ${err}`));
 
         await ctx.reply(`Ура! Отредактировали ${colNames[feature]}!`);
 

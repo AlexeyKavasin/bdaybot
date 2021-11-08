@@ -19,7 +19,7 @@ export const getAuthClient = async () => {
 };
 
 export const getApiClient = async () => {
-   const authClient = await getAuthClient();
+   const authClient = await getAuthClient().catch((err) => console.log(`GetAuthClient Error: ${err}`));
    const {spreadsheets: apiClient} = google.sheets({
        version: 'v4',
        auth: authClient,

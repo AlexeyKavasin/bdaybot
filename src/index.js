@@ -45,6 +45,12 @@ bot.command('remind', async (ctx) => {
     }
 });
 
+bot.command('upcoming', async (ctx) => {
+    if (permitted) {
+        await ctx.scene.enter('employeesScene');
+    }
+});
+
 bot.command('exit', async (ctx) => {
     await ctx.scene.leave();
 });

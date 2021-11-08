@@ -117,10 +117,10 @@ export const SetBirthDayScene = new Scenes.WizardScene('setBirthDayScene',
         }
 
         if (data === CONFIRM_MULTI) {
-            const apiClient = await getApiClient();
+            const apiClient = await getApiClient().catch((err) => console.log(`GetApiClient Error: ${err}`));
             await appendSheetsData(apiClient, {
                 values: ctx.wizard.state.newEmployees.data,
-            })
+            }).catch((err) => console.log(`AppendSheetsData Error: ${err}`));
             await ctx.reply('Ура! Новые сотрудники добавлены!');
 
             return ctx.scene.leave();
@@ -141,9 +141,12 @@ export const SetBirthDayScene = new Scenes.WizardScene('setBirthDayScene',
         }
 
         const { name, date } = ctx.wizard.state.newEmployee;
-        const apiClient = await getApiClient();
+        const apiClient = await getApiClient().catch((err) => console.log(`GetApiClient Error: ${err}`));
 
-        await appendSheetsData(apiClient, { values: [[name, date, comment]] });
+        await appendSheetsData(
+            apiClient,
+            { values: [[name, date, comment]] }
+        ).catch((err) => console.log(`AppendSheetsData Error: ${err}`));
         await ctx.reply('Ура! Новый сотрудник добавлен!');
 
         return ctx.scene.leave();

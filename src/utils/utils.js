@@ -1,3 +1,5 @@
+import { GETLIST_REPLIES, UPCOMING_REPLIES } from '../constants.js';
+
 export function prepareEmployeesInfo(str) {
     if (!str || !str.length) {
         return [];
@@ -40,8 +42,8 @@ export function getRange(feature, employeeIndex) {
     return `${col}${Number(employeeIndex) + 2}`;
 }
 
-export function getEmployeesData(data) {
-    return data.reduce((acc, item, index) => {
+export function getEmployeesData(data, fullList = true) {
+    const res = data.reduce((acc, item, index) => {
         const name = item.values[0].formattedValue;
         const bDay = item.values[1].formattedValue;
         const comment = item.values[2].formattedValue;
@@ -50,6 +52,20 @@ export function getEmployeesData(data) {
             return [...acc, {name, bDay, comment}];
         }
     
+        return acc;
+    }, []);
+
+    return fullList ? res : getEmployeesWithBirthdaysThisWeek(res);
+}
+
+export function getEmployeesKeyBoard(employeesData) {
+    return employeesData.reduce((acc, item, index) => {
+        const { bDay, name } = item;
+
+        if (name) {
+            return [...acc, [{text: `${name} ${bDay}`, callback_data: `employee-${index}`}]];
+        }
+
         return acc;
     }, []);
 }
@@ -107,4 +123,34 @@ export function dateIsValid(date) {
     }
 
     return isDayAndMonthValid(day, month);
+}
+
+export function sortDatesAscending(a, b) {
+    const birthdayA = a.bDay;
+    const birthdayB = b.bDay;
+
+    const [dayA, monthA] = birthdayA.split('.');
+    const [dayB, monthB] = birthdayB.split('.');
+    
+    // 2020 - leap year
+    const dateA = new Date(2020, monthA - 1, dayA);
+    const dateB = new Date(2020, monthB - 1, dayB);
+    
+    if (dateA > dateB) {
+        return 1;
+    }
+    
+    if (dateA < dateB) {
+        return -1;
+    }
+    
+    return 0;
+}
+
+export function getEmployeesReplyText(fullList) {
+    if (fullList) {
+        return GETLIST_REPLIES[Math.abs(Math.round(Math.random() * GETLIST_REPLIES.length - 1))];
+    }
+
+    return UPCOMING_REPLIES[Math.abs(Math.round(Math.random() * UPCOMING_REPLIES.length - 1))];
 }
