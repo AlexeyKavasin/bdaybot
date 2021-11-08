@@ -1,4 +1,4 @@
-import { GETLIST_REPLIES, UPCOMING_REPLIES } from '../constants.js';
+import { GET_ALL_REPLIES, UPCOMING_REPLIES } from '../constants.js';
 
 export function prepareEmployeesInfo(str) {
     if (!str || !str.length) {
@@ -149,7 +149,7 @@ export function sortDatesAscending(a, b) {
 
 export function getEmployeesReplyText(fullList) {
     if (fullList) {
-        return GETLIST_REPLIES[Math.abs(Math.round(Math.random() * GETLIST_REPLIES.length - 1))];
+        return GET_ALL_REPLIES[Math.abs(Math.round(Math.random() * GET_ALL_REPLIES.length - 1))];
     }
 
     return UPCOMING_REPLIES[Math.abs(Math.round(Math.random() * UPCOMING_REPLIES.length - 1))];
