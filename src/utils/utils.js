@@ -24,8 +24,10 @@ export function composeEmployeesText(data) {
     return `Давай проверим что все правильно.\n\n${namesAndDates}\n\nВсе так?`;
 }
 
-export function getRange(feature, employeeIndex) {
+export function getRange(feature, employeeId, allEmployees) {
     let col;
+
+    const employeeIndex = allEmployees.findIndex((emp) => emp.id === employeeId);
 
     if (feature === 'name') {
         col = 'A';
@@ -42,28 +44,33 @@ export function getRange(feature, employeeIndex) {
     return `${col}${Number(employeeIndex) + 2}`;
 }
 
-export function getEmployeesData(data, fullList = true) {
+export function getEmployeesData(data) {
     const res = data.reduce((acc, item, index) => {
         const name = item.values[0].formattedValue;
         const bDay = item.values[1].formattedValue;
         const comment = item.values[2].formattedValue;
+        const id = item.values[3].formattedValue;
     
         if (index > 0 && name && bDay) {
-            return [...acc, {name, bDay, comment}];
+            return [...acc, {name, bDay, comment, id}];
         }
     
         return acc;
     }, []);
 
-    return fullList ? res : getEmployeesWithBirthdaysThisWeek(res);
+    return res;
 }
 
-export function getEmployeesKeyBoard(employeesData) {
-    return employeesData.reduce((acc, item, index) => {
-        const { bDay, name } = item;
+export function getEmployeesKeyBoard(employeesData, fullList = true) {
+    const preparedEmployees = fullList
+        ? employeesData.sort(sortDatesAscending)
+        : getEmployeesWithBirthdaysThisWeek(employeesData).sort(sortDatesAscending);
+
+    return preparedEmployees.reduce((acc, item) => {
+        const { bDay, name, id } = item;
 
         if (name) {
-            return [...acc, [{text: `${name} ${bDay}`, callback_data: `employee-${index}`}]];
+            return [...acc, [{text: `${name} ${bDay}`, callback_data: `employee-${id}`}]];
         }
 
         return acc;
@@ -153,4 +160,8 @@ export function getEmployeesReplyText(fullList) {
     }
 
     return UPCOMING_REPLIES[Math.abs(Math.round(Math.random() * UPCOMING_REPLIES.length - 1))];
+}
+
+export function generateRandomId() {
+    return Math.random().toString(16).slice(2);
 }

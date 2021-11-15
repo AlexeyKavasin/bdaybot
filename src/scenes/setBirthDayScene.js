@@ -1,7 +1,7 @@
 import { Scenes } from 'telegraf';
 import { TO_MAIN_MENU, TO_MAIN_MENU_BTN } from '../constants.js';
 import { appendSheetsData, getApiClient } from '../utils/googlesheetutils.js';
-import { composeEmployeesText, prepareEmployeesInfo, dateIsValid } from '../utils/utils.js';
+import { composeEmployeesText, prepareEmployeesInfo, dateIsValid, generateRandomId } from '../utils/utils.js';
 
 const CONFIRM = 'CONFIRM';
 const CONFIRM_MULTI = 'CONFIRM_MULTI';
@@ -75,7 +75,7 @@ export const SetBirthDayScene = new Scenes.WizardScene('setBirthDayScene',
             const employeesText = composeEmployeesText(employeesInfo);
 
             ctx.wizard.state.newEmployees = {
-                data: employeesInfo.map((e) => [e.name, e.date]),
+                data: employeesInfo.map((e) => [e.name, e.date, '-', generateRandomId()]),
             };
 
             ctx.reply(employeesText, {
@@ -134,7 +134,7 @@ export const SetBirthDayScene = new Scenes.WizardScene('setBirthDayScene',
         const { name, date } = ctx.wizard.state.newEmployee;
         const apiClient = await getApiClient().catch((err) => console.log(`Api Client Error: ${err}`));
 
-        await appendSheetsData(apiClient, { values: [[name, date, comment]] });
+        await appendSheetsData(apiClient, { values: [[name, date, comment, generateRandomId()]] });
         await ctx.reply('Ура! Новый сотрудник добавлен!');
 
         return ctx.scene.leave();

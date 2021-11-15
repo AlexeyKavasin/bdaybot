@@ -27,7 +27,6 @@ bot.start(async (ctx) => {
     permitted = Boolean(permissions && ctx.chat.username && permissions.includes(ctx.chat.username));
 
     if (permitted) {
-        // set cron here
         ctx.reply(GREETING_TEXT, { reply_markup: ROOT_MARKUP });
     } else {
         ctx.reply(STRANGER_GREETING_TEXT);
