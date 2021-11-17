@@ -1,14 +1,20 @@
 import { Telegraf, Scenes, session } from 'telegraf';
 import { SetBirthDayScene } from './scenes/setBirthDayScene.js';
 import { EmployeesScene } from './scenes/employeesScene.js';
-import { SetCronScene } from './scenes/cronScene.js';
-import { GREETING_TEXT, STRANGER_GREETING_TEXT } from './constants.js';
+import {
+    GET_ALL,
+    GET_UPCOMING,
+    GREETING_TEXT,
+    ROOT_MARKUP,
+    SET_NEW,
+    STRANGER_GREETING_TEXT,
+} from './constants.js';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
-const stage = new Scenes.Stage([ EmployeesScene, SetBirthDayScene, SetCronScene ]);
+const stage = new Scenes.Stage([ EmployeesScene, SetBirthDayScene ]);
 
 bot.use(session());
 bot.use(stage.middleware())
@@ -21,27 +27,30 @@ bot.start(async (ctx) => {
     permitted = Boolean(permissions && ctx.chat.username && permissions.includes(ctx.chat.username));
 
     if (permitted) {
-        ctx.reply(GREETING_TEXT);
+        ctx.reply(GREETING_TEXT, { reply_markup: ROOT_MARKUP });
     } else {
         ctx.reply(STRANGER_GREETING_TEXT);
     }
 });
 
-bot.command('getlist', async (ctx) => {
+bot.action(GET_ALL, async (ctx) => {
     if (permitted) {
+        await ctx.deleteMessage();
         await ctx.scene.enter('employeesScene');
     }
 });
 
-bot.command('set', async (ctx) => {
+bot.action(GET_UPCOMING, async (ctx) => {
     if (permitted) {
-        await ctx.scene.enter('setBirthDayScene');
+        await ctx.deleteMessage();
+        await ctx.scene.enter('employeesScene');
     }
 });
 
-bot.command('remind', async (ctx) => {
+bot.action(SET_NEW, async (ctx) => {
     if (permitted) {
-        await ctx.scene.enter('setCronScene');
+        await ctx.deleteMessage();
+        await ctx.scene.enter('setBirthDayScene');
     }
 });
 
@@ -49,20 +58,20 @@ bot.command('exit', async (ctx) => {
     await ctx.scene.leave();
 });
 
-bot.command('help', async (ctx) => {
-    ctx.reply('/getlist - список сотрудников с возможностью правки данных\n/set - добавить нового сотрудника\n/remind - установить напоминалку\n/exit - выход к начальному состоянию');
-})
-
 EmployeesScene.leave((ctx) => {
-    ctx.reply(GREETING_TEXT);
+    if (permitted) {
+        ctx.reply(GREETING_TEXT, { reply_markup: ROOT_MARKUP });
+    } else {
+        ctx.reply(STRANGER_GREETING_TEXT);
+    }
 })
 
 SetBirthDayScene.leave((ctx) => {
-    ctx.reply(GREETING_TEXT);
-})
-
-SetCronScene.leave((ctx) => {
-    ctx.reply(GREETING_TEXT);
+    if (permitted) {
+        ctx.reply(GREETING_TEXT, { reply_markup: ROOT_MARKUP });
+    } else {
+        ctx.reply(STRANGER_GREETING_TEXT);
+    }
 })
 
 bot.launch();

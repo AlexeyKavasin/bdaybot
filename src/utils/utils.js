@@ -1,3 +1,5 @@
+import { GET_ALL_REPLIES, UPCOMING_REPLIES } from '../constants.js';
+
 export function prepareEmployeesInfo(str) {
     if (!str || !str.length) {
         return [];
@@ -22,8 +24,10 @@ export function composeEmployeesText(data) {
     return `Давай проверим что все правильно.\n\n${namesAndDates}\n\nВсе так?`;
 }
 
-export function getRange(feature, employeeIndex) {
+export function getRange(feature, employeeId, allEmployees) {
     let col;
+
+    const employeeIndex = allEmployees.findIndex((emp) => emp.id === employeeId);
 
     if (feature === 'name') {
         col = 'A';
@@ -41,15 +45,35 @@ export function getRange(feature, employeeIndex) {
 }
 
 export function getEmployeesData(data) {
-    return data.reduce((acc, item, index) => {
+    const res = data.reduce((acc, item, index) => {
         const name = item.values[0].formattedValue;
         const bDay = item.values[1].formattedValue;
         const comment = item.values[2].formattedValue;
+        const id = item.values[3].formattedValue;
     
         if (index > 0 && name && bDay) {
-            return [...acc, {name, bDay, comment}];
+            return [...acc, {name, bDay, comment, id}];
         }
     
+        return acc;
+    }, []);
+
+    return res;
+}
+
+export function getEmployeesKeyBoard(employeesData, fullList = true) {
+    const copied = JSON.parse(JSON.stringify(employeesData));
+    const preparedEmployees = fullList
+        ? copied.sort(sortDatesAscending)
+        : getEmployeesWithBirthdaysThisWeek(copied).sort(sortDatesAscending);
+
+    return preparedEmployees.reduce((acc, item) => {
+        const { bDay, name, id } = item;
+
+        if (name) {
+            return [...acc, [{text: `${name} ${bDay}`, callback_data: `employee-${id}`}]];
+        }
+
         return acc;
     }, []);
 }
@@ -107,4 +131,38 @@ export function dateIsValid(date) {
     }
 
     return isDayAndMonthValid(day, month);
+}
+
+export function sortDatesAscending(a, b) {
+    const birthdayA = a.bDay;
+    const birthdayB = b.bDay;
+
+    const [dayA, monthA] = birthdayA.split('.');
+    const [dayB, monthB] = birthdayB.split('.');
+    
+    // 2020 - leap year
+    const dateA = new Date(2020, monthA - 1, dayA);
+    const dateB = new Date(2020, monthB - 1, dayB);
+    
+    if (dateA > dateB) {
+        return 1;
+    }
+    
+    if (dateA < dateB) {
+        return -1;
+    }
+    
+    return 0;
+}
+
+export function getEmployeesReplyText(fullList) {
+    if (fullList) {
+        return GET_ALL_REPLIES[Math.abs(Math.round(Math.random() * GET_ALL_REPLIES.length - 1))];
+    }
+
+    return UPCOMING_REPLIES[Math.abs(Math.round(Math.random() * UPCOMING_REPLIES.length - 1))];
+}
+
+export function generateRandomId() {
+    return Math.random().toString(16).slice(2);
 }

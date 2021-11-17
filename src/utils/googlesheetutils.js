@@ -19,11 +19,8 @@ export const getAuthClient = async () => {
 };
 
 export const getApiClient = async () => {
-   const authClient = await getAuthClient();
-   const {spreadsheets: apiClient} = google.sheets({
-       version: 'v4',
-       auth: authClient,
-   });
+   const authClient = await getAuthClient().catch((err) => console.log(`GetAuthClient Error: ${err}`));
+   const {spreadsheets: apiClient} = google.sheets({ version: 'v4', auth: authClient });
 
    return apiClient;
 };
@@ -34,7 +31,7 @@ export const getSheetsData = async (apiClient) => {
        fields: 'sheets',
        ranges: 'School_Birthdays',
        includeGridData: true,
-   });
+   }).catch((err) => console.log(`GetSheetsData Error: ${err}`));
 
    return data.sheets;
 };
@@ -45,7 +42,7 @@ export const appendSheetsData = (apiClient, resource) => {
         range: 'School_Birthdays',
         valueInputOption: 'USER_ENTERED',
         resource,
-   });
+   }).catch((err) => console.log(`AppendSheetsData Error: ${err}`));
 };
 
 export const updateSheetsData = (apiClient, range, resource) => {
@@ -54,12 +51,12 @@ export const updateSheetsData = (apiClient, range, resource) => {
          range: `School_Birthdays!${range}`,
          valueInputOption: 'USER_ENTERED',
          resource,
-    });
+    }).catch((err) => console.log(`UpdateSheetsData Error: ${err}`));
 };
 
 export const deleteRow = (apiClient, resource) => {
     apiClient.batchUpdate({
         spreadsheetId: process.env.SHEET_ID,
         resource,
-    });
+    }).catch((err) => console.log(`DeleteRow Error: ${err}`));
 };
