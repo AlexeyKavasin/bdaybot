@@ -62,9 +62,10 @@ export function getEmployeesData(data) {
 }
 
 export function getEmployeesKeyBoard(employeesData, fullList = true) {
+    const copied = JSON.parse(JSON.stringify(employeesData));
     const preparedEmployees = fullList
-        ? employeesData.sort(sortDatesAscending)
-        : getEmployeesWithBirthdaysThisWeek(employeesData).sort(sortDatesAscending);
+        ? copied.sort(sortDatesAscending)
+        : getEmployeesWithBirthdaysThisWeek(copied).sort(sortDatesAscending);
 
     return preparedEmployees.reduce((acc, item) => {
         const { bDay, name, id } = item;

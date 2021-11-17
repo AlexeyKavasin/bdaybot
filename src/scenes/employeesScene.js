@@ -13,6 +13,8 @@ const colNames = {
 
 export const EmployeesScene = new Scenes.WizardScene('employeesScene',
     async (ctx) => {
+        ctx.wizard.state.employeesList = {};
+
         const fullList = Boolean(ctx?.callbackQuery?.data.includes(GET_ALL));
         ctx.reply(getEmployeesReplyText(fullList));
 
@@ -21,13 +23,13 @@ export const EmployeesScene = new Scenes.WizardScene('employeesScene',
         const employeesData = await getEmployeesData(sheet.data[0].rowData);
         const employeesKeyboard = await getEmployeesKeyBoard(employeesData, fullList);
 
-        if (employeesData && employeesData.length) {
+        if (employeesData && employeesData.length && employeesKeyboard && employeesKeyboard.length) {
             ctx.reply("Вот список:", {
                 reply_markup: {
                     inline_keyboard: [ ...employeesKeyboard, TO_MAIN_MENU_BTN],
                 }
             });
-    
+
             ctx.wizard.state.employeesList = {
                 employees: employeesData,
             }
