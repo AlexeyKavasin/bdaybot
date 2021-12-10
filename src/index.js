@@ -74,7 +74,16 @@ SetBirthDayScene.leave((ctx) => {
     }
 })
 
-bot.launch();
+if (process.env.IS_DEV) {
+    bot.launch()
+} else {
+    bot.launch({
+        webhook: {
+          domain: 'https://schl-bday-bot.herokuapp.com',
+          port: process.env.PORT,
+        }
+    });
+}
 
 // Enable graceful stop
 process.once('SIGINT', () => bot.stop('SIGINT'));
