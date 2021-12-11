@@ -19,14 +19,11 @@ const stage = new Scenes.Stage([ EmployeesScene, SetBirthDayScene ]);
 bot.use(session());
 bot.use(stage.middleware())
 
+const permissions = process.env.PERMISSIONS;
 let permitted = false;
 
 bot.start(async (ctx) => {
-    const permissions = process.env.PERMISSIONS;
-
-    permitted = Boolean(permissions && ctx.chat.username && permissions.includes(ctx.chat.username));
-
-    if (permitted) {
+    if (Boolean(permissions && ctx.chat.username && permissions.includes(ctx.chat.username))) {
         ctx.reply(GREETING_TEXT, { reply_markup: ROOT_MARKUP });
     } else {
         ctx.reply(STRANGER_GREETING_TEXT);
@@ -34,21 +31,21 @@ bot.start(async (ctx) => {
 });
 
 bot.action(GET_ALL, async (ctx) => {
-    if (permitted) {
+    if (Boolean(permissions && ctx.chat.username && permissions.includes(ctx.chat.username))) {
         await ctx.deleteMessage();
         await ctx.scene.enter('employeesScene');
     }
 });
 
 bot.action(GET_UPCOMING, async (ctx) => {
-    if (permitted) {
+    if (Boolean(permissions && ctx.chat.username && permissions.includes(ctx.chat.username))) {
         await ctx.deleteMessage();
         await ctx.scene.enter('employeesScene');
     }
 });
 
 bot.action(SET_NEW, async (ctx) => {
-    if (permitted) {
+    if (Boolean(permissions && ctx.chat.username && permissions.includes(ctx.chat.username))) {
         await ctx.deleteMessage();
         await ctx.scene.enter('setBirthDayScene');
     }
@@ -58,8 +55,15 @@ bot.command('exit', async (ctx) => {
     await ctx.scene.leave();
 });
 
+bot.on('text', (ctx) => {
+    console.log(ctx);
+    console.log('*************');
+    console.log(permitted);
+    ctx.reply('webhook after cycling test');
+});
+
 EmployeesScene.leave((ctx) => {
-    if (permitted) {
+    if (Boolean(permissions && ctx.chat.username && permissions.includes(ctx.chat.username))) {
         ctx.reply(GREETING_TEXT, { reply_markup: ROOT_MARKUP });
     } else {
         ctx.reply(STRANGER_GREETING_TEXT);
@@ -67,7 +71,7 @@ EmployeesScene.leave((ctx) => {
 })
 
 SetBirthDayScene.leave((ctx) => {
-    if (permitted) {
+    if (Boolean(permissions && ctx.chat.username && permissions.includes(ctx.chat.username))) {
         ctx.reply(GREETING_TEXT, { reply_markup: ROOT_MARKUP });
     } else {
         ctx.reply(STRANGER_GREETING_TEXT);
