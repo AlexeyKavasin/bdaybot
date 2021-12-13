@@ -166,3 +166,7 @@ export function getEmployeesReplyText(fullList) {
 export function generateRandomId() {
     return Math.random().toString(16).slice(2);
 }
+
+export function hasPermissions(permissions, name) {
+    return Boolean(permissions && name && permissions.includes(name));
+}
