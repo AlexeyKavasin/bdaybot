@@ -20,11 +20,8 @@ const stage = new Scenes.Stage([ EmployeesScene, SetBirthDayScene ]);
 bot.use(session());
 bot.use(stage.middleware())
 
-const permissions = process.env.PERMISSIONS;
-let permitted = false;
-
 bot.start(async (ctx) => {
-    if (hasPermissions(permissions, ctx.chat.username)) {
+    if (hasPermissions(process.env.PERMISSIONS, ctx.chat.username)) {
         ctx.reply(GREETING_TEXT, { reply_markup: ROOT_MARKUP });
     } else {
         ctx.reply(STRANGER_GREETING_TEXT);
@@ -32,21 +29,21 @@ bot.start(async (ctx) => {
 });
 
 bot.action(GET_ALL, async (ctx) => {
-    if (hasPermissions(permissions, ctx.chat.username)) {
+    if (hasPermissions(process.env.PERMISSIONS, ctx.chat.username)) {
         await ctx.deleteMessage();
         await ctx.scene.enter('employeesScene');
     }
 });
 
 bot.action(GET_UPCOMING, async (ctx) => {
-    if (hasPermissions(permissions, ctx.chat.username)) {
+    if (hasPermissions(process.env.PERMISSIONS, ctx.chat.username)) {
         await ctx.deleteMessage();
         await ctx.scene.enter('employeesScene');
     }
 });
 
 bot.action(SET_NEW, async (ctx) => {
-    if (hasPermissions(permissions, ctx.chat.username)) {
+    if (hasPermissions(process.env.PERMISSIONS, ctx.chat.username)) {
         await ctx.deleteMessage();
         await ctx.scene.enter('setBirthDayScene');
     }
@@ -57,20 +54,20 @@ bot.command('exit', async (ctx) => {
 });
 
 EmployeesScene.leave((ctx) => {
-    if (hasPermissions(permissions, ctx.chat.username)) {
+    if (hasPermissions(process.env.PERMISSIONS, ctx.chat.username)) {
         ctx.reply(GREETING_TEXT, { reply_markup: ROOT_MARKUP });
     } else {
         ctx.reply(STRANGER_GREETING_TEXT);
     }
-})
+});
 
 SetBirthDayScene.leave((ctx) => {
-    if (hasPermissions(permissions, ctx.chat.username)) {
+    if (hasPermissions(process.env.PERMISSIONS, ctx.chat.username)) {
         ctx.reply(GREETING_TEXT, { reply_markup: ROOT_MARKUP });
     } else {
         ctx.reply(STRANGER_GREETING_TEXT);
     }
-})
+});
 
 if (process.env.IS_DEV) {
     bot.launch()
