@@ -26,13 +26,14 @@ export const EmployeesScene = new Scenes.WizardScene('employeesScene',
         if (employeesData && employeesData.length && employeesKeyboard && employeesKeyboard.length) {
             ctx.reply("Вот список:", {
                 reply_markup: {
-                    inline_keyboard: [ ...employeesKeyboard, TO_MAIN_MENU_BTN],
+                    inline_keyboard: [...employeesKeyboard, TO_MAIN_MENU_BTN],
                 }
             });
 
             ctx.wizard.state.employeesList = {
                 employees: employeesData,
-            }
+                isFullList: fullList,
+            };
 
             return ctx.wizard.next();
         } else {
@@ -51,6 +52,19 @@ export const EmployeesScene = new Scenes.WizardScene('employeesScene',
         if (goBack || text === '/exit') {
             await ctx.deleteMessage();
             return ctx.scene.leave();
+        }
+
+        if (ctx.callbackQuery && ctx.callbackQuery.data.includes('PAGE')) {
+            const pageNum = ctx.callbackQuery.data.split('-')[1];
+            await ctx.deleteMessage();
+            const { employees, isFullList } = ctx.wizard.state.employeesList;
+            const newKeyboard = await getEmployeesKeyBoard(employees, isFullList, Number(pageNum))
+
+            ctx.reply("Вот список:", {
+                reply_markup: {
+                    inline_keyboard: [...newKeyboard, TO_MAIN_MENU_BTN],
+                }
+            });
         }
 
         if (ctx.callbackQuery && ctx.callbackQuery.data.includes('employee')) {
