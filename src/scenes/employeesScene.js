@@ -56,14 +56,11 @@ export const EmployeesScene = new Scenes.WizardScene('employeesScene',
 
         if (ctx.callbackQuery && ctx.callbackQuery.data.includes('PAGE')) {
             const pageNum = ctx.callbackQuery.data.split('-')[1];
-            await ctx.deleteMessage();
             const { employees, isFullList } = ctx.wizard.state.employeesList;
             const newKeyboard = await getEmployeesKeyBoard(employees, isFullList, Number(pageNum))
 
-            ctx.reply("Вот список:", {
-                reply_markup: {
-                    inline_keyboard: [...newKeyboard, TO_MAIN_MENU_BTN],
-                }
+            ctx.editMessageReplyMarkup({
+                inline_keyboard: [...newKeyboard, TO_MAIN_MENU_BTN],
             });
         }
 
