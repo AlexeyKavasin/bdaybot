@@ -47,3 +47,5 @@ export const TO_MAIN_MENU_BTN = [
         callback_data: TO_MAIN_MENU,
     }
 ]
+
+export const EMPLOYEES_PER_PAGE = 10;

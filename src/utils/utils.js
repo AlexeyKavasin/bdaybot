@@ -1,4 +1,4 @@
-import { GET_ALL_REPLIES, UPCOMING_REPLIES } from '../constants.js';
+import { GET_ALL_REPLIES, UPCOMING_REPLIES, EMPLOYEES_PER_PAGE } from '../constants.js';
 
 export function prepareEmployeesInfo(str) {
     if (!str || !str.length) {
@@ -61,13 +61,47 @@ export function getEmployeesData(data) {
     return res;
 }
 
-export function getEmployeesKeyBoard(employeesData, fullList = true) {
+export function getPaginationBtns(data, currentPage) {
+    const pagesAmount = Math.ceil(data.length / EMPLOYEES_PER_PAGE);
+    const pages = [];
+
+    if (pagesAmount <= 1) {
+        return [];
+    }
+
+    for (let i = 1; i <= pagesAmount; i++) {
+        pages.push({
+            text: i === currentPage? `* ${i} *` : i,
+            callback_data: `PAGE-${i}`,
+        })
+    }
+
+    return [pages];
+}
+
+export function getSliceStart(currPage) {
+    if (currPage === 1) {
+        return 0;
+    }
+
+    return (currPage - 1) * EMPLOYEES_PER_PAGE;
+}
+
+export function getSliceEnd(currPage) {
+    if (currPage === 1) {
+        return EMPLOYEES_PER_PAGE;
+    }
+
+    return currPage * EMPLOYEES_PER_PAGE;
+}
+
+export function getEmployeesKeyBoard(employeesData, fullList = true, currentPage = 1) {
     const copied = JSON.parse(JSON.stringify(employeesData));
     const preparedEmployees = fullList
         ? copied.sort(sortDatesAscending)
         : getEmployeesWithBirthdaysThisWeek(copied).sort(sortDatesAscending);
 
-    return preparedEmployees.reduce((acc, item) => {
+    const employeesBtns = preparedEmployees.reduce((acc, item) => {
         const { bDay, name, id } = item;
 
         if (name) {
@@ -76,6 +110,14 @@ export function getEmployeesKeyBoard(employeesData, fullList = true) {
 
         return acc;
     }, []);
+    const paginationBtns = getPaginationBtns(preparedEmployees, currentPage);
+    const sliceStart = getSliceStart(currentPage);
+    const sliceEnd = getSliceEnd(currentPage);
+
+    return [
+        ...employeesBtns.slice(sliceStart, sliceEnd),
+        ...paginationBtns,
+    ];
 }
 
 const DAYS_IN_MONTHS = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
