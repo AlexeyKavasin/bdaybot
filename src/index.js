@@ -53,6 +53,10 @@ bot.command('exit', async (ctx) => {
     await ctx.scene.leave();
 });
 
+bot.on('text', async (ctx) => {
+    await console.log(ctx);
+})
+
 EmployeesScene.leave((ctx) => {
     if (hasPermissions(process.env.PERMISSIONS, ctx.chat.username)) {
         ctx.reply(GREETING_TEXT, { reply_markup: ROOT_MARKUP });
