@@ -70,11 +70,17 @@ SetBirthDayScene.leave((ctx) => {
 });
 
 if (process.env.IS_DEV) {
-    bot.launch()
+    bot.launch();
 } else {
     bot.launch({
         webhook: {
-          domain: 'https://schl-bday-bot.herokuapp.com',
+          cb: (req, res) => {
+            // all good if has ctx here
+            // if so - check has permissions and send message
+            console.log('req: ', req);
+            console.log('res: ', res);
+          },
+          domain: `https://${process.env.HEROKU_URL}.herokuapp.com`,
           port: process.env.PORT,
         }
     });
