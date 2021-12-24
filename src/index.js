@@ -54,7 +54,8 @@ bot.command('exit', async (ctx) => {
 });
 
 bot.on('text', async (ctx) => {
-    await console.log(ctx);
+    // should have permissions as well
+    await console.log(ctx.message);
 })
 
 EmployeesScene.leave((ctx) => {
