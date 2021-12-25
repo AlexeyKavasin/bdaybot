@@ -55,17 +55,13 @@ bot.command('exit', async (ctx) => {
 
 bot.on('text', async (ctx) => {
     const msg = await ctx && ctx.update && ctx.update.text;
-    
-    console.log('msg: ', msg);
-    console.log('env: ', process.env.TRIGGER_NAME);
 
     if (msg && msg.includes(process.env.TRIGGER_NAME)) {
         const preparedText = msg.split(process.env.TRIGGER_NAME)[1];
-        console.log('preparedText: ', preparedText);
 
         if (preparedText) {
             // ctx.reply(preparedText.trim());
-            console.log(preparedText.trim());
+            console.log('preparedText: ', preparedText.trim());
         }
     }
 })
