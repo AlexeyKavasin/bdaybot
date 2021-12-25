@@ -59,9 +59,8 @@ bot.on('text', async (ctx) => {
     if (msg && msg.includes(process.env.TRIGGER_NAME)) {
         const preparedText = msg.split(process.env.TRIGGER_NAME)[1];
 
-        if (preparedText) {
-            // ctx.reply(preparedText.trim());
-            console.log('preparedText: ', preparedText.trim());
+        if (preparedText && preparedText.length) {
+            ctx.reply(preparedText.trim());
         }
     }
 })
