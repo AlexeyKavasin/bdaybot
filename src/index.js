@@ -54,9 +54,16 @@ bot.command('exit', async (ctx) => {
 });
 
 bot.on('text', async (ctx) => {
-    // should have permissions as well
-    // await console.log(ctx && ctx.update && ctx.update.text);
-    await console.log(ctx);
+    const msg = await ctx && ctx.update && ctx.update.text;
+    
+    if (msg && msg.includes(process.env.TRIGGER_NAME)) {
+        const preparedText = msg.split(process.env.TRIGGER_NAME)[1];
+
+        if (preparedText) {
+            // ctx.reply(preparedText.trim());
+            console.log(preparedText.trim());
+        }
+    }
 })
 
 EmployeesScene.leave((ctx) => {
