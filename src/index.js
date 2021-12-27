@@ -60,7 +60,8 @@ bot.on('text', async (ctx) => {
         const preparedText = msg.split(process.env.TRIGGER_NAME)[1];
 
         if (preparedText && preparedText.length) {
-            ctx.telegram.sendMessage(ctx.message.chat.id, preparedText.trim());
+            console.log(ctx);
+            // ctx.telegram.sendMessage(ctx.message.chat.id, preparedText.trim());
         }
     }
 })
