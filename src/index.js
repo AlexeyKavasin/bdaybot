@@ -86,13 +86,12 @@ SetBirthDayScene.leave((ctx) => {
 if (process.env.IS_DEV) {
     bot.launch();
 } else {
-    // bot.launch({
-    //     webhook: {
-    //       domain: `https://${process.env.HEROKU_URL}.herokuapp.com`,
-    //       port: process.env.PORT,
-    //     }
-    // });
-    bot.launch();
+    bot.launch({
+        webhook: {
+          domain: `https://${process.env.HEROKU_URL}.herokuapp.com`,
+          port: process.env.PORT,
+        }
+    });
 }
 
 // Enable graceful stop
