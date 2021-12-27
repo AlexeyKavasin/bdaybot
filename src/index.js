@@ -37,6 +37,7 @@ bot.action(GET_ALL, async (ctx) => {
 
 bot.action(GET_UPCOMING, async (ctx) => {
     if (hasPermissions(process.env.PERMISSIONS, ctx.chat.username)) {
+        console.log(ctx);
         await ctx.deleteMessage();
         await ctx.scene.enter('employeesScene');
     }
@@ -60,7 +61,6 @@ bot.on('text', async (ctx) => {
         const preparedText = msg.split(process.env.TRIGGER_NAME)[1];
 
         if (preparedText && preparedText.length) {
-            console.log(ctx);
             ctx.telegram.sendMessage(ctx.update.chat_id, preparedText.trim());
         }
     }
