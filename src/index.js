@@ -37,7 +37,7 @@ bot.action(GET_ALL, async (ctx) => {
 
 bot.action(GET_UPCOMING, async (ctx) => {
     if (hasPermissions(process.env.PERMISSIONS, ctx.chat.username)) {
-        console.log(ctx);
+        console.log(`user: ${ctx.chat.username}, chatId: ${ctx.chat.id}`);
         await ctx.deleteMessage();
         await ctx.scene.enter('employeesScene');
     }
