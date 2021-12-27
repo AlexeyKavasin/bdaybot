@@ -61,7 +61,7 @@ bot.on('text', async (ctx) => {
 
         if (preparedText && preparedText.length) {
             console.log(ctx);
-            // ctx.telegram.sendMessage(ctx.message.chat.id, preparedText.trim());
+            ctx.telegram.sendMessage(ctx.update.chat_id, preparedText.trim());
         }
     }
 })
