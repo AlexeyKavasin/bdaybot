@@ -88,7 +88,7 @@ if (process.env.IS_DEV) {
 } else {
     bot.launch({
         webhook: {
-          domain: `https://${process.env.HEROKU_URL}.herokuapp.com`,
+          domain: `https://${process.env.OCEAN_APP_NAME}.ondigitalocean.app`,
           port: process.env.PORT,
         }
     });
