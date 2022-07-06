@@ -18,7 +18,7 @@ export const EmployeesScene = new Scenes.WizardScene('employeesScene',
         const fullList = Boolean(ctx?.callbackQuery?.data.includes(GET_ALL));
         ctx.reply(getEmployeesReplyText(fullList));
 
-        const apiClient = await getApiClient().catch((err) => console.log(`Api Client Error: ${err}`));
+        const apiClient = await getApiClient();
         const [sheet] = await getSheetsData(apiClient);
         const employeesData = await getEmployeesData(sheet.data[0].rowData);
         const employeesKeyboard = await getEmployeesKeyBoard(employeesData, fullList);
@@ -124,7 +124,7 @@ export const EmployeesScene = new Scenes.WizardScene('employeesScene',
             if (employeeIndex !== -1) {
                 await ctx.reply('Секундочку. Удаляем сотрудника...');
 
-                const apiClient = await getApiClient().catch((err) => console.log(`Api Client Error: ${err}`));
+                const apiClient = await getApiClient();
                 await deleteRow(apiClient, {
                     requests: [
                         {
@@ -157,7 +157,7 @@ export const EmployeesScene = new Scenes.WizardScene('employeesScene',
         const feature = ctx.wizard.state.employeesList.editingFeature;
         const employeeId = ctx.wizard.state.employeesList.editingId;
         const allEmployees = ctx.wizard.state.employeesList.employees;
-        const apiClient = await getApiClient().catch((err) => console.log(`Api Client Error: ${err}`));
+        const apiClient = await getApiClient();
 
         await updateSheetsData(apiClient, getRange(feature, employeeId, allEmployees), { values: [[text]] });
 
